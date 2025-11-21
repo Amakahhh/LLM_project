@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import List, Tuple
 
 from dotenv import load_dotenv
-from openai import OpenAI, OpenAIError
+from groq import Groq, GroqError
 
 load_dotenv()
 
@@ -23,7 +23,7 @@ SYSTEM_PROMPT = (
     "You are a helpful, step-by-step teaching assistant. "
     "Always explain your reasoning clearly and cite any assumptions."
 )
-DEFAULT_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
+DEFAULT_MODEL = os.getenv("LLM_MODEL", "llama-3.1-70b-versatile")
 
 
 @dataclass
@@ -70,15 +70,15 @@ def build_prompt(original: str, cleaned: str, tokens: List[str]) -> str:
     )
 
 
-def _get_client() -> OpenAI:
-    """Create an OpenAI client using the configured API key."""
-    api_key = os.getenv("OPENAI_API_KEY")
+def _get_client() -> Groq:
+    """Create a Groq client using the configured API key."""
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError(
-            "OPENAI_API_KEY is not set. Create a .env file or set the "
-            "environment variable with a valid LLM provider key."
+            "GROQ_API_KEY is not set. Create a .env file or set the "
+            "environment variable with your Groq API key."
         )
-    return OpenAI(api_key=api_key)
+    return Groq(api_key=api_key)
 
 
 def ask_llm(prompt: str, *, model: str = DEFAULT_MODEL, temperature: float = 0.2) -> str:
@@ -94,9 +94,9 @@ def ask_llm(prompt: str, *, model: str = DEFAULT_MODEL, temperature: float = 0.2
             ],
             max_tokens=600,
         )
-    except OpenAIError as exc:
+    except GroqError as exc:
         raise RuntimeError(
-            "Unable to reach the LLM API. Verify your API key, network "
+            "Unable to reach the Groq API. Verify your API key, network "
             "connection, and model name."
         ) from exc
 
