@@ -1,6 +1,6 @@
 # LLM Question-and-Answering System
 
-This project delivers both a Python command-line interface (CLI) and a Flask-based web UI that send user questions to Groq’s hosted LLMs after basic text preprocessing.
+This project delivers both a Python command-line interface (CLI) and a Flask-based web UI that send user questions to Google’s Gemini models after basic text preprocessing.
 
 ## Project structure
 
@@ -19,11 +19,11 @@ LLM_QA_Project_yourName_matricNo/
 ## Prerequisites
 
 1. Python 3.10+
-2. A Groq API key (`GROQ_API_KEY`)
+2. A Gemini API key (`GOOGLE_API_KEY`)
 3. (Optional) A `.env` file at the project root:
    ```
-   GROQ_API_KEY=gsk_...
-   LLM_MODEL=llama-3.1-70b-versatile
+   GOOGLE_API_KEY=your_gemini_key
+   LLM_MODEL=gemini-1.5-flash
    FLASK_SECRET_KEY=change-me
    ```
 
@@ -53,7 +53,7 @@ Open `http://127.0.0.1:5000` to interact with the GUI.
 ## Deploying the web app (Part C)
 
 1. Choose a hosting platform (Render, PythonAnywhere, Streamlit Cloud, Vercel).
-2. Set the `GROQ_API_KEY` (and optionally `LLM_MODEL` + `FLASK_SECRET_KEY`) as environment variables on the platform.
+2. Set the `GOOGLE_API_KEY` (and optionally `LLM_MODEL` + `FLASK_SECRET_KEY`) as environment variables on the platform.
 3. Use `gunicorn app:app` (Render/Vercel) or the platform’s built-in WSGI runner.
 4. Update `LLM_QA_hosted_webGUI_link.txt` with your name, matric number, deployment URL, and GitHub repository link.
 

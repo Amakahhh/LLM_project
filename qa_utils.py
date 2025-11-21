@@ -15,7 +15,8 @@ from dataclasses import dataclass
 from typing import List, Tuple
 
 from dotenv import load_dotenv
-from groq import Groq, GroqError
+import google.generativeai as genai
+from google.api_core.exceptions import GoogleAPIError
 
 load_dotenv()
 
@@ -23,7 +24,8 @@ SYSTEM_PROMPT = (
     "You are a helpful, step-by-step teaching assistant. "
     "Always explain your reasoning clearly and cite any assumptions."
 )
-DEFAULT_MODEL = os.getenv("LLM_MODEL", "llama-3.1-70b-versatile")
+DEFAULT_MODEL = os.getenv("LLM_MODEL", "gemini-1.5-flash")
+_GENAI_READY = False
 
 
 @dataclass
@@ -70,40 +72,48 @@ def build_prompt(original: str, cleaned: str, tokens: List[str]) -> str:
     )
 
 
-def _get_client() -> Groq:
-    """Create a Groq client using the configured API key."""
-    api_key = os.getenv("GROQ_API_KEY")
+def _ensure_client() -> None:
+    """Configure the Gemini client once using the provided API key."""
+    global _GENAI_READY
+    if _GENAI_READY:
+        return
+
+    api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise RuntimeError(
-            "GROQ_API_KEY is not set. Create a .env file or set the "
-            "environment variable with your Groq API key."
+            "GOOGLE_API_KEY is not set. Create a .env file or set the "
+            "environment variable with your Gemini API key."
         )
-    return Groq(api_key=api_key)
+
+    genai.configure(api_key=api_key)
+    _GENAI_READY = True
 
 
 def ask_llm(prompt: str, *, model: str = DEFAULT_MODEL, temperature: float = 0.2) -> str:
     """Send the prompt to the LLM and return the generated answer."""
-    client = _get_client()
+    _ensure_client()
     try:
-        response = client.chat.completions.create(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=600,
+        generative_model = genai.GenerativeModel(
+            model_name=model,
+            system_instruction=SYSTEM_PROMPT,
         )
-    except GroqError as exc:
+        response = generative_model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=temperature,
+                max_output_tokens=600,
+            ),
+        )
+    except GoogleAPIError as exc:
         raise RuntimeError(
-            "Unable to reach the Groq API. Verify your API key, network "
+            "Unable to reach the Gemini API. Verify your API key, network "
             "connection, and model name."
         ) from exc
 
-    choice = response.choices[0].message.content
-    if not choice:
+    text = (response.text or "").strip()
+    if not text:
         raise RuntimeError("The LLM returned an empty response.")
-    return choice.strip()
+    return text
 
 
 def run_qa(question: str) -> QAResult:
