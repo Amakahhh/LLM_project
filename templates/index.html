@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM Q&A Assistant</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        line-height: 1.6;
+        background: #f5f5f5;
+        color: #1f2933;
+        padding: 2rem;
+      }
+      .app {
+        max-width: 720px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 18px;
+        padding: 2rem 2.5rem;
+        box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
+      }
+      h1 {
+        margin-top: 0;
+        font-size: 2rem;
+        color: #111827;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        font-size: 1rem;
+        resize: vertical;
+      }
+      button {
+        align-self: flex-start;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 0.8rem 1.8rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+      button:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      .panel {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        background: #fdfdfd;
+      }
+      .panel h2 {
+        margin-top: 0;
+        font-size: 1.1rem;
+        letter-spacing: 0.02em;
+        color: #0f172a;
+      }
+      .tokens {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      .token {
+        background: #e0ecff;
+        color: #1d4ed8;
+        padding: 0.2rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .empty {
+        color: #6b7280;
+        font-style: italic;
+      }
+      @media (max-width: 640px) {
+        body {
+          padding: 1rem;
+        }
+        .app {
+          padding: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <h1>LLM Question &amp; Answering Assistant</h1>
+      <p>Type a question in plain English and get a beginner-friendly explanation.</p>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <form method="post">
+        <label for="question">Your question</label>
+        <textarea id="question" name="question" placeholder="e.g. How does gradient descent work?">{{ question }}</textarea>
+        <button type="submit">Ask the LLM</button>
+      </form>
+
+      {% if result %}
+      <section class="panel">
+        <h2>Processed Question</h2>
+        <p><strong>Original:</strong> {{ result.original_question }}</p>
+        <p><strong>Lowercased &amp; cleaned:</strong> {{ result.cleaned_question or "N/A" }}</p>
+        <div>
+          <strong>Tokens:</strong>
+          {% if result.tokens %}
+          <div class="tokens">
+            {% for token in result.tokens %}
+            <span class="token">{{ token }}</span>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="empty">No tokens detected.</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>LLM Answer</h2>
+        <p>{{ result.answer }}</p>
+      </section>
+      {% endif %}
+    </main>
+  </body>
+</html>
+
